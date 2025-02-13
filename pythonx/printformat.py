@@ -1,17 +1,35 @@
 import vim
+from io import StringIO
+import sys
 
 
 def format_line():
+    old_stdout = sys.stdout
     try:
-        # Get the current buffer
         buffer = vim.current.buffer
-        # Get the current line number (0-based index)
         line_nr = vim.current.window.cursor[0] - 1
-        # Get the current line content
         line = buffer[line_nr]
-        # Print the line (this will appear in Neovim's message area)
-        print(line)
-        # Replace the current line with the printed output
-        buffer[line_nr] = line
+
+        stdout = StringIO()
+        sys.stdout = stdout
+
+        try:
+            eval_result = eval(line)
+            print(eval_result)
+        except:
+            print(line)
+
+        output = stdout.getvalue()
+        sys.stdout = old_stdout
+
+        lines = [line.rstrip() for line in output.splitlines()]
+        if not lines:
+            lines = [""]
+
+        # Replace the lines and show message
+        buffer[line_nr : line_nr + 1] = lines
+        vim.api.out_write(f"Formatted line {line_nr + 1} into {len(lines)} lines\n")
+
     except Exception as e:
-        print(f"Error: {str(e)}")
+        sys.stdout = old_stdout
+        vim.api.err_write(f"Error: {str(e)}\n")
