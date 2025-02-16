@@ -28,8 +28,11 @@ def format_line():
 
         # Replace the lines and show message
         buffer[line_nr : line_nr + 1] = lines
-        vim.api.out_write(f"Formatted line {line_nr + 1} into {len(lines)} lines\n")
+        # Show message in floating notification
+        message = f"Formatted line {line_nr + 1} into {len(lines)} lines"
+        vim.api.notify(message, 2, {"title": "Format Line"})
 
     except Exception as e:
         sys.stdout = old_stdout
-        vim.api.err_write(f"Error: {str(e)}\n")
+        # Show error in floating notification
+        vim.api.notify(str(e), 3, {"title": "Format Line Error"})
